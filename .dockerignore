@@ -1,0 +1,13 @@
+node_modules
+dist
+.git
+.env
+.wechat-token
+.wechat-context.json
+.companion-state.json
+data
+logs
+report
+workspace
+*.log
+.idea

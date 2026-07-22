@@ -1,0 +1,29 @@
+{
+  "series": {
+    "basic": { "name": "基础", "style": "cute" },
+    "daimao_batiao": { "name": "呆猫八条", "style": "cute" }
+  },
+  "stickers": {
+    "happy": { "file": "stickers/happy.png", "label": "开心", "series": "basic", "description": "开心" },
+    "ok": { "file": "stickers/ok.png", "label": "OK", "series": "basic", "description": "OK点赞" },
+    "sad": { "file": "stickers/sad.png", "label": "难过", "series": "basic", "description": "难过安慰" },
+    "think": { "file": "stickers/think.png", "label": "思考", "series": "basic", "description": "思考疑惑" },
+    "love": { "file": "stickers/love.png", "label": "爱心", "series": "basic", "description": "喜欢想你" },
+    "linqilai": { "file": "stickers/把你拎起来.jpg", "label": "拎你", "series": "daimao_batiao", "description": "捉弄欺负" },
+    "buxiangshangban": { "file": "stickers/不想上班.jpg", "label": "不想上班", "series": "daimao_batiao", "description": "摆烂" },
+    "buyaozou": { "file": "stickers/不要走.jpg", "label": "不要走", "series": "daimao_batiao", "description": "挽留撒娇" },
+    "dingzhini": { "file": "stickers/盯着你看.jpg", "label": "盯着你看", "series": "daimao_batiao", "description": "查岗吃醋" },
+    "duojiao": { "file": "stickers/跺脚.jpg", "label": "跺脚", "series": "daimao_batiao", "description": "赌气" },
+    "duojiao2": { "file": "stickers/跺脚2.jpg", "label": "跺脚2", "series": "daimao_batiao", "description": "闹别扭" },
+    "gandong": { "file": "stickers/感动.jpg", "label": "感动", "series": "daimao_batiao", "description": "暖心" },
+    "huaixiao": { "file": "stickers/坏笑.jpg", "label": "坏笑", "series": "daimao_batiao", "description": "调皮使坏" },
+    "qigugu": { "file": "stickers/气鼓鼓.jpg", "label": "气鼓鼓", "series": "daimao_batiao", "description": "生气吃醋" },
+    "shiluo": { "file": "stickers/失落.jpg", "label": "失落", "series": "daimao_batiao", "description": "低落" },
+    "tutoushe": { "file": "stickers/吐舌头.jpg", "label": "吐舌头", "series": "daimao_batiao", "description": "鬼脸" },
+    "weiqukelian": { "file": "stickers/委屈可怜.jpg", "label": "委屈", "series": "daimao_batiao", "description": "撒娇求哄" },
+    "weiqukuku": { "file": "stickers/委屈哭哭.jpg", "label": "委屈哭", "series": "daimao_batiao", "description": "想哭" },
+    "wocuole": { "file": "stickers/我错了.jpg", "label": "我错了", "series": "daimao_batiao", "description": "道歉" },
+    "wolaila": { "file": "stickers/我来了.jpg", "label": "我来了", "series": "daimao_batiao", "description": "主动找你" },
+    "yansu": { "file": "stickers/严肃.jpg", "label": "严肃", "series": "daimao_batiao", "description": "讲道理" }
+  }
+}

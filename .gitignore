@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+*.log
+workspace/
+.idea/
+.wechat-token
+.wechat-context.json
+data/
+.companion-state.json
+/report
+/logs

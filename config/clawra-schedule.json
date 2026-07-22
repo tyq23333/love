@@ -1,0 +1,46 @@
+{
+  "weekday": [
+    {
+      "time": "09:00",
+      "activity": "起床",
+      "location": "bedroom",
+      "sendPhoto": false,
+      "messageType": "greeting",
+      "promptHint": "早上好，问问对方今天有什么安排"
+    },
+    {
+      "time": "12:30",
+      "activity": "吃午饭",
+      "location": "kitchen",
+      "sendPhoto": false,
+      "messageType": "meal",
+      "promptHint": "提醒对方吃午饭，顺便说自己在吃什么"
+    },
+    {
+      "time": "22:00",
+      "activity": "准备睡觉",
+      "location": "bedroom",
+      "sendPhoto": false,
+      "messageType": "goodnight",
+      "promptHint": "晚安，叮嘱早点休息"
+    }
+  ],
+  "weekend": [
+    {
+      "time": "10:00",
+      "activity": "起床",
+      "location": "bedroom",
+      "sendPhoto": false,
+      "messageType": "greeting",
+      "promptHint": "周末睡到自然醒，说声早安"
+    },
+    {
+      "time": "22:30",
+      "activity": "准备睡觉",
+      "location": "bedroom",
+      "sendPhoto": false,
+      "messageType": "goodnight",
+      "promptHint": "晚安，祝对方做个好梦"
+    }
+  ]
+}
