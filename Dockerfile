@@ -1,13 +1,10 @@
-FROM node:22-bookworm-slim
+FROM node:22-bookworm
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
+# 避免把本机 Windows 的 node_modules 带进来；sharp 在 Linux 容器内安装
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm install --omit=dev
 
 COPY tsconfig.json ./
 COPY src ./src
@@ -15,8 +12,6 @@ COPY config ./config
 
 ENV NODE_ENV=production
 ENV PERSIST_DIR=/data
-
-VOLUME ["/data"]
 
 EXPOSE 3000
 

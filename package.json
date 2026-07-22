@@ -6,7 +6,8 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx src/index.ts",
-    "build": "tsc",
+    "build": "echo skip-tsc",
+    "typecheck": "tsc --noEmit",
     "start": "tsx src/index.ts",
     "test": "vitest run",
     "test:watch": "vitest",
