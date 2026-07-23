@@ -5,10 +5,11 @@ import { persistPath } from "../util/persist.js";
 
 const HISTORY_DIR = persistPath("data", "history");
 
-/** 人设改名后合并旧 key 的历史（如 claude → 克劳德） */
+/** 人设改名后合并旧 key 的历史 */
 const PERSONA_ALIASES: Record<string, string[]> = {
-  claude: ["克劳德"],
-  克劳德: ["claude"],
+  claude: ["克劳德", "夏以昼"],
+  克劳德: ["claude", "夏以昼"],
+  夏以昼: ["claude", "克劳德"],
 };
 
 export function getHistoryKeyAliases(key: string): string[] {
