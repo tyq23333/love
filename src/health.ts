@@ -1,6 +1,6 @@
 import http from "http";
 
-/** Railway 等平台需要监听 PORT；本地未设置则跳过 */
+/** Railway 等平台会注入 PORT；本地未设置则跳过 */
 export function startHealthServer(): void {
   const raw = process.env["PORT"];
   if (!raw) return;
@@ -13,7 +13,8 @@ export function startHealthServer(): void {
 
   const body = JSON.stringify({ ok: true, service: "im-claude" });
   const server = http.createServer((req, res) => {
-    if (req.url === "/" || req.url === "/health") {
+    const path = req.url?.split("?")[0];
+    if (path === "/" || path === "/health") {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(body);
       return;
@@ -22,7 +23,8 @@ export function startHealthServer(): void {
     res.end();
   });
 
-  server.listen(port, () => {
-    console.log(`[Health] 监听 :${port}`);
+  // 必须绑 0.0.0.0，否则平台健康检查可能连不上
+  server.listen(port, "0.0.0.0", () => {
+    console.log(`[Health] 监听 0.0.0.0:${port}`);
   });
 }

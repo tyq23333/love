@@ -6,5 +6,3 @@ dockerfilePath = "Dockerfile"
 startCommand = "npx tsx src/index.ts"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
-healthcheckPath = "/health"
-healthcheckTimeout = 30
