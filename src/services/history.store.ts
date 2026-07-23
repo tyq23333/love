@@ -56,23 +56,47 @@ export function loadHistory(key: string): MessageParam[] {
   return parseHistoryFile(key);
 }
 
-/** 加载历史，若当前 key 为空则尝试合并旧人设 key 并迁移 */
+/** 加载历史：合并当前人设与旧别名 key，避免改名后只读到新空档 */
 export function loadHistoryWithFallback(key: string): MessageParam[] {
   const keys = getHistoryKeyAliases(key);
+  const chunks: { k: string; data: MessageParam[] }[] = [];
+
   for (const k of keys) {
     const data = parseHistoryFile(k);
-    if (data.length > 0) {
-      if (k !== key) {
-        console.log(`[Memory] 从旧 key「${k}」迁移 ${data.length} 条历史 →「${key}」`);
-        saveHistory(key, data);
-        deleteHistory(k);
-      } else {
-        console.log(`[Memory] 从磁盘恢复 ${data.length} 条历史 key=${key}`);
-      }
-      return data;
+    if (data.length > 0) chunks.push({ k, data });
+  }
+
+  if (chunks.length === 0) return [];
+
+  // 多个人设 key 都有记录时合并（按出现顺序去重），再写回当前 key
+  const merged: MessageParam[] = [];
+  const seen = new Set<string>();
+  for (const { data } of chunks) {
+    for (const m of data) {
+      const sig = `${m.role}:${typeof m.content === "string" ? m.content : JSON.stringify(m.content)}`;
+      if (seen.has(sig)) continue;
+      seen.add(sig);
+      merged.push(m);
     }
   }
-  return [];
+
+  const max = getMaxHistoryMessages();
+  const trimmed = merged.length > max ? merged.slice(merged.length - max) : merged;
+
+  const fromOld = chunks.some((c) => c.k !== key);
+  if (fromOld || chunks[0]!.k !== key) {
+    console.log(
+      `[Memory] 合并历史 ${trimmed.length} 条 →「${key}」（来源: ${chunks.map((c) => `${c.k}:${c.data.length}`).join(", ")}）`,
+    );
+    saveHistory(key, trimmed);
+    for (const { k } of chunks) {
+      if (k !== key) deleteHistory(k);
+    }
+  } else {
+    console.log(`[Memory] 从磁盘恢复 ${trimmed.length} 条历史 key=${key}`);
+  }
+
+  return trimmed;
 }
 
 export function saveHistory(key: string, messages: MessageParam[]): void {
