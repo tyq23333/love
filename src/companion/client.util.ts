@@ -14,7 +14,7 @@ export function createCompanionClient(): Anthropic {
 }
 
 export function companionModel(): string {
-  return process.env["ANTHROPIC_MODEL"] ?? "claude-sonnet-4-5";
+  return process.env["ANTHROPIC_MODEL"] ?? "claude-sonnet-4-6";
 }
 
 export function shouldSkipResponse(text: string): boolean {

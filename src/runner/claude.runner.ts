@@ -82,7 +82,7 @@ function resolveConfig(): {
   const model =
     process.env["ANTHROPIC_MODEL"] ??
     fileSettings["ANTHROPIC_MODEL"] ??
-    "claude-sonnet-4-20250514";
+    "claude-sonnet-4-6";
   const useAgentSdk = process.env["USE_AGENT_SDK"] === "true";
   const proxyUrl = anthropicProxyUrl();
 
