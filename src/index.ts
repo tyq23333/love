@@ -147,7 +147,7 @@ async function main() {
         targetChatId,
         userId: targetChatId,
         personaName: persona,
-        silenceMin: Number(process.env["CONVERSATION_SILENCE_MIN"] ?? "2"),
+        silenceMin: Number(process.env["CONVERSATION_SILENCE_MIN"] ?? "3"),
         checkIntervalSec: Number(process.env["CONVERSATION_CHECK_INTERVAL_SEC"] ?? "30"),
         quietStart: process.env["COMPANION_QUIET_START"] ?? "01:00",
         quietEnd: process.env["COMPANION_QUIET_END"] ?? "08:00",

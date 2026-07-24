@@ -73,8 +73,8 @@ export function getSessionWindowMin(): number {
 
 /** 持续对话中，Bot 回复后用户沉默多久该追问 */
 export function getSilenceFollowUpMin(): number {
-  const n = Number(process.env["CONVERSATION_SILENCE_MIN"] ?? "2");
-  return Number.isFinite(n) && n > 0 ? n : 2;
+  const n = Number(process.env["CONVERSATION_SILENCE_MIN"] ?? "3");
+  return Number.isFinite(n) && n > 0 ? n : 3;
 }
 
 export interface SilenceFollowUpCheck {
