@@ -18,6 +18,7 @@ import { ConversationWatcher } from "./companion/conversation.watcher.js";
 import type { IMAdapter } from "./adapters/base.adapter.js";
 import { startHealthServer } from "./health.js";
 import { getPersistRoot } from "./util/persist.js";
+import { bootstrapMemoryFromEnv } from "./services/memory.bootstrap.js";
 
 function requireEnv(key: string): string {
   const val = process.env[key];
@@ -36,6 +37,7 @@ async function main() {
   if (!process.env["PERSIST_DIR"]?.trim() && !process.env["RAILWAY_VOLUME_MOUNT_PATH"]?.trim()) {
     console.warn("[Persist] 未设置 PERSIST_DIR / Volume，重启后微信 Token 与聊天记录可能丢失");
   }
+  bootstrapMemoryFromEnv();
 
   const personasPath = path.resolve(process.cwd(), "config/personas.json");
   const personasConfig = loadPersonasConfig(personasPath);
