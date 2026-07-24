@@ -8,12 +8,33 @@ import {
   type WeChatImageItem,
 } from "./wechat-cdn.util.js";
 import { axiosDirect } from "../util/proxy.js";
-import { persistPath } from "../util/persist.js";
+import { persistPath, ensurePersistDir, getPersistRoot } from "../util/persist.js";
 
 const BASE_URL = "https://ilinkai.weixin.qq.com";
-const TOKEN_FILE = persistPath(".wechat-token");
-const CONTEXT_FILE = persistPath(".wechat-context.json");
 const CHANNEL_VERSION = "1.0.2";
+
+function tokenFile(): string {
+  return persistPath(".wechat-token");
+}
+
+function contextFile(): string {
+  return persistPath(".wechat-context.json");
+}
+
+/** 旧版写在项目根目录的 token，部署后会丢；若 Volume 里没有则尝试迁移 */
+function legacyTokenCandidates(): string[] {
+  return [
+    path.resolve(process.cwd(), ".wechat-token"),
+    path.resolve("/app", ".wechat-token"),
+  ];
+}
+
+function legacyContextCandidates(): string[] {
+  return [
+    path.resolve(process.cwd(), ".wechat-context.json"),
+    path.resolve("/app", ".wechat-context.json"),
+  ];
+}
 
 // ── API 类型 ──────────────────────────────────────────────────────────────────
 
@@ -102,6 +123,7 @@ export class WeChatAdapter implements IMAdapter {
 
  async start(): Promise {
  console.log("[WeChat] 正在启动微信适配器...");
+ console.log(`[WeChat] Token 路径: ${tokenFile()} (persist=${getPersistRoot()})`);
 
  this.botToken = this.loadToken();
  if (!this.botToken) {
@@ -619,37 +641,80 @@ export class WeChatAdapter implements IMAdapter {
  // ── Token 持久化 ───────────────────────────────────────────────────────────
 
  private loadToken(): string | null {
+ const primary = tokenFile();
+ const parsed = this.readTokenFile(primary);
+ if (parsed) return parsed;
+
+ for (const candidate of legacyTokenCandidates()) {
+  if (path.resolve(candidate) === path.resolve(primary)) continue;
+  const legacy = this.readTokenFile(candidate);
+  if (legacy) {
+   console.log(`[WeChat] 从旧路径迁移 Token: ${candidate} → ${primary}`);
+   this.botToken = legacy;
+   // baseurl 已在 readTokenFile 里写到 this.baseUrl
+   this.saveToken(legacy);
+   try { fs.unlinkSync(candidate); } catch { /* ignore */ }
+   return legacy;
+  }
+ }
+ return null;
+ }
+
+ private readTokenFile(filePath: string): string | null {
  try {
- const raw = fs.readFileSync(TOKEN_FILE, "utf-8").trim();
- if (!raw) return null;
- const data = JSON.parse(raw) as { token: string; baseurl?: string };
- if (data.baseurl) this.baseUrl = data.baseurl;
- return data.token;
- } catch { return null; }
+  const raw = fs.readFileSync(filePath, "utf-8").trim();
+  if (!raw) return null;
+  const data = JSON.parse(raw) as { token: string; baseurl?: string };
+  if (data.baseurl) this.baseUrl = data.baseurl;
+  return data.token || null;
+ } catch {
+  return null;
+ }
  }
 
  private saveToken(token: string): void {
  try {
- fs.writeFileSync(TOKEN_FILE, JSON.stringify({ token, baseurl: this.baseUrl }), "utf-8");
+  ensurePersistDir();
+  fs.writeFileSync(tokenFile(), JSON.stringify({ token, baseurl: this.baseUrl }), "utf-8");
+  console.log(`[WeChat] Token 已保存到 ${tokenFile()}`);
  } catch (err) { console.warn("[WeChat] 无法保存 Token:", err); }
  }
 
  private deleteToken(): void {
- try { fs.unlinkSync(TOKEN_FILE); } catch { /* 忽略 */ }
+ try { fs.unlinkSync(tokenFile()); } catch { /* 忽略 */ }
  }
 
  private loadContextTokens(): void {
+ const primary = contextFile();
+ if (this.readContextFile(primary)) return;
+
+ for (const candidate of legacyContextCandidates()) {
+  if (path.resolve(candidate) === path.resolve(primary)) continue;
+  if (this.readContextFile(candidate)) {
+   console.log(`[WeChat] 从旧路径迁移 context_token: ${candidate} → ${primary}`);
+   this.saveContextTokens();
+   try { fs.unlinkSync(candidate); } catch { /* ignore */ }
+   return;
+  }
+ }
+ }
+
+ private readContextFile(filePath: string): boolean {
  try {
- const raw = fs.readFileSync(CONTEXT_FILE, "utf-8").trim();
- if (!raw) return;
- const data = JSON.parse(raw) as Record<string, string>;
- this.contextTokens = new Map(Object.entries(data));
- } catch { /* 首次运行无文件 */ }
+  const raw = fs.readFileSync(filePath, "utf-8").trim();
+  if (!raw) return false;
+  const data = JSON.parse(raw) as Record<string, string>;
+  this.contextTokens = new Map(Object.entries(data));
+  return this.contextTokens.size > 0;
+ } catch {
+  return false;
+ }
  }
 
  private saveContextTokens(): void {
  try {
- fs.writeFileSync(CONTEXT_FILE, JSON.stringify(Object.fromEntries(this.contextTokens)), "utf-8");
+  ensurePersistDir();
+  fs.writeFileSync(contextFile(), JSON.stringify(Object.fromEntries(this.contextTokens)), "utf-8");
  } catch (err) { console.warn("[WeChat] 无法保存 context_token:", err); }
  }
 

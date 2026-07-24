@@ -30,6 +30,12 @@ async function main() {
   const persistRoot = getPersistRoot();
   fs.mkdirSync(persistRoot, { recursive: true });
   console.log(`[Persist] 数据目录: ${persistRoot}`);
+  if (process.env["RAILWAY_VOLUME_MOUNT_PATH"]) {
+    console.log(`[Persist] Railway Volume: ${process.env["RAILWAY_VOLUME_MOUNT_PATH"]}`);
+  }
+  if (!process.env["PERSIST_DIR"]?.trim() && !process.env["RAILWAY_VOLUME_MOUNT_PATH"]?.trim()) {
+    console.warn("[Persist] 未设置 PERSIST_DIR / Volume，重启后微信 Token 与聊天记录可能丢失");
+  }
 
   const personasPath = path.resolve(process.cwd(), "config/personas.json");
   const personasConfig = loadPersonasConfig(personasPath);
