@@ -21,6 +21,14 @@ import {
   getHistoryKeyAliases,
 } from "../services/history.store.js";
 import { loadRecentUserTexts } from "../services/message.logger.js";
+import {
+  loadMemorySummary,
+  formatSummaryForPrompt,
+  compactOverflowIntoSummary,
+  deleteMemorySummary,
+  deleteAllSummariesForUser,
+  isMemorySummaryEnabled,
+} from "../services/memory.summary.js";
 import type { IncomingImage } from "../adapters/base.adapter.js";
 import { buildUserMessageContent, historyPlaceholder } from "./message-content.js";
 import { prepareImagesForVision } from "./image-preprocess.js";
@@ -193,7 +201,13 @@ export class ClaudeRunner {
     const profile = getPersona(personaName);
     const key = this.historyKey(userId, personaName);
     const history = [...this.getHistory(key)];
-    const logHint = history.length === 0 ? this.buildLogContextHint(userId, personaName) : "";
+    const summaryHint = isMemorySummaryEnabled()
+      ? formatSummaryForPrompt(loadMemorySummary(key))
+      : "";
+    const logHint =
+      history.length === 0 && !summaryHint
+        ? this.buildLogContextHint(userId, personaName)
+        : "";
 
     // 用户追问刚才的图：重新附上缓存的图片
     let activeImages = images;
@@ -219,7 +233,11 @@ export class ClaudeRunner {
       );
     }
 
-    let systemPrompt = buildSystemPrompt(profile, { useAgentSdk: false }) + logHint + buildStickerAvoidHint(userId, personaName);
+    let systemPrompt =
+      buildSystemPrompt(profile, { useAgentSdk: false }) +
+      summaryHint +
+      logHint +
+      buildStickerAvoidHint(userId, personaName);
     if (visionAnalysis) {
       systemPrompt += `\n\n## 图片客观识别（回复必须与此一致，禁止编造）\n${visionAnalysis}`;
     }
@@ -229,7 +247,7 @@ export class ClaudeRunner {
     }
 
     console.log(
-      `[Memory] 携带 ${history.length} 条历史 key=${key}${logHint ? " + 日志补全" : ""}${activeImages?.length ? ` + 图片×${activeImages.length}${visionAnalysis ? " + 预分析" : ""}` : ""}`,
+      `[Memory] 携带 ${history.length} 条近期原文 key=${key}${summaryHint ? " + 长期摘要" : ""}${logHint ? " + 日志补全" : ""}${activeImages?.length ? ` + 图片×${activeImages.length}${visionAnalysis ? " + 预分析" : ""}` : ""}`,
     );
 
     const userContent = buildUserMessageContent(userMessage, activeImages, {
@@ -264,8 +282,9 @@ export class ClaudeRunner {
       text = await processSelfieTags(text, profile);
 
       history.push({ role: "assistant", content: text });
-      while (history.length > this.maxHistoryMessages) {
-        history.shift();
+      if (history.length > this.maxHistoryMessages) {
+        const overflow = history.splice(0, history.length - this.maxHistoryMessages);
+        await compactOverflowIntoSummary(key, overflow);
       }
 
       const lastUser = history[history.length - 2];
@@ -381,6 +400,7 @@ export class ClaudeRunner {
     this.sessions.clear(userId, personaName);
     this.conversationHistory.delete(key);
     deleteHistory(key);
+    deleteMemorySummary(key);
   }
 
   clearAllSessions(userId: string): void {
@@ -389,8 +409,10 @@ export class ClaudeRunner {
       if (key.startsWith(`${userId}:`)) {
         this.conversationHistory.delete(key);
         deleteHistory(key);
+        deleteMemorySummary(key);
       }
     }
     deleteAllHistoryForUser(userId);
+    deleteAllSummariesForUser(userId);
   }
 }

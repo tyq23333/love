@@ -8,6 +8,11 @@ import {
 } from "../services/history.store.js";
 import { loadRecentUserTexts } from "../services/message.logger.js";
 import {
+  loadMemorySummary,
+  formatSummaryForPrompt,
+  isMemorySummaryEnabled,
+} from "../services/memory.summary.js";
+import {
   loadCompanionState,
   minutesSince,
   formatDurationZh,
@@ -26,12 +31,15 @@ export function loadRecentChatContext(
   const key = companionHistoryKey(userId, personaName);
   const history = loadHistoryWithFallback(key);
   const recent = history.slice(-limit);
+  const summary =
+    isMemorySummaryEnabled() ? formatSummaryForPrompt(loadMemorySummary(key)).trim() : "";
 
   if (recent.length > 0) {
-    return recent
-      .map((m) => formatMessageLine(m))
-      .join("\n");
+    const chat = recent.map((m) => formatMessageLine(m)).join("\n");
+    return summary ? `${summary}\n\n## 近期对话\n${chat}` : chat;
   }
+
+  if (summary) return summary;
 
   const personaNames = [
     ...new Set(getHistoryKeyAliases(key).map((k) => k.split(":")[1] ?? personaName)),
